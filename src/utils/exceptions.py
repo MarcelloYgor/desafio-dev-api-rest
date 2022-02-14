@@ -1,0 +1,3 @@
+
+class SemSaldoException(Exception):
+    pass

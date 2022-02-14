@@ -1,0 +1,7 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dock-rest-api
+  namespace: dock-rest-api
+spec:
+  replicas: 1

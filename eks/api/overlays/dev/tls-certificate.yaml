@@ -1,0 +1,8 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: dock-rest-api-com
+  namespace: dock-rest-api
+spec:
+  dnsNames:
+    - dock-digital.com

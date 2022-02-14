@@ -1,0 +1,90 @@
+# Credenciais para imagem docker
+apiVersion: v1
+kind: Secret
+metadata:
+  name: registry-secret
+  namespace: dock-rest-api
+type: kubernetes.io/dockerconfigjson
+data:
+  .dockerconfigjson: ...
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dock-rest-api
+  namespace: dock-rest-api
+spec:
+  selector:
+    matchLabels:
+      run: dock-rest-api
+  template:
+    metadata:
+      labels:
+        run: dock-rest-api
+    spec:
+      containers:
+        - name:  dock-rest-api
+          image: <docker-image>
+          # Uncomment and apply when need to re-pull image
+          imagePullPolicy: Always
+          env:
+          command: ["/bin/sh","-c"]
+          args: ['...']
+          volumeMounts:
+          # Nginx conf
+          - mountPath: "/nginx"
+            name: nginx-conf-local
+          # Git key
+          - mountPath: "/root/.ssh/id_rsa"
+            subPath: "id_rsa"
+            name: ssh
+      volumes:
+        - name: ssh
+          secret:
+            secretName: ssh-dock-rest-api
+            defaultMode: 0400
+        - name: nginx-conf-local
+          configMap:
+            name: nginx-conf
+      imagePullSecrets:
+      - name: registry-secret
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dock-rest-api
+  namespace: dock-rest-api
+  labels:
+    run: dock-rest-api
+spec:
+  type: NodePort
+  ports:
+  - port: ...
+    nodePort: ...
+    protocol: TCP
+  selector:
+    run: dock-rest-api
+
+---
+# Load balancer - ELB
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  namespace: dock-rest-api
+  name: ingress-dock-rest-api
+
+---
+# Auto signed certificates
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: dock-rest-api-com
+  namespace: dock-rest-api
+spec:
+  secretName: dock-rest-api-com-tls
+  issuerRef:
+    name: dock-rest-api-certificate-issuer
+  duration: 8640h
+  renewBefore: 360h

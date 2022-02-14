@@ -1,0 +1,439 @@
+openapi: 3.0.3
+
+info:
+  version: 1.0.0
+  title: Conta Digital Dock
+
+servers:
+  - url: http://localhost/
+  - url: https://localhost/
+
+tags:
+  - name: Autenticacao
+  - name: Portador
+  - name: Conta
+  - name: Transacao
+
+paths:
+  /login:
+    get:
+      tags:
+        - Autenticacao
+      summary: Recebe token
+      operationId: api.auth.login
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Login com sucesso
+        "400":
+          description: Requisição inválida
+        "401":
+          description: Usuário e/ou senha inválido
+        "500":
+          description: Erro interno no servidor
+
+  /usuario:
+    post:
+      tags:
+        - Usuario
+      summary: Cria usuario
+      operationId: api.usuario.cria_usuario
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Usuario'
+      responses:
+        "201":
+          description: Cadastro de usuario efetuado com sucesso
+        "400":
+          description: Requisição inválida
+        "401":
+          description: Requisição não autorizada
+        "403":
+          description: Sem permissão
+        "500":
+          description: Erro interno no servidor
+
+  /portador:
+    post:
+      tags:
+        - Portador
+      summary: Cria portador
+      operationId: api.portador.cria_portador
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Portador'
+              required:
+                - cpf
+                - nome
+      responses:
+        "201":
+          description: Cadastro de portador efetuado com sucesso
+        "400":
+          description: Requisição inválida
+        "401":
+          description: Requisição não autorizada
+        "403":
+          description: Sem permissão
+        "500":
+          description: Erro interno no servidor
+      security:
+        - XAccessToken:
+          - create:portador
+
+    delete:
+      tags:
+        - Portador
+      summary: Exclui portador
+      operationId: api.portador.exclui_portador
+      responses:
+        "200":
+          description: Portador excluído com sucesso
+        "400":
+          description: Requisição inválida
+        "401":
+          description: Requisição não autorizada
+        "403":
+          description: Sem permissão
+        "500":
+          description: Erro interno no servidor
+      security:
+        - XAccessToken:
+          - delete:portador
+
+  /portador/{portador_id}/conta:
+    post:
+      tags:
+        - Conta
+      summary: Cria conta
+      operationId: api.conta.cria_conta
+      parameters:
+        - name: portador_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Conta'
+              required:
+                - saldo
+      responses:
+        "201":
+          description: Cadastro de conta efetuada com sucesso
+        "400":
+          description: Requisição inválida
+        "401":
+          description: Requisição não autorizada
+        "403":
+          description: Sem permissão
+        "500":
+          description: Erro interno no servidor
+      security:
+        - XAccessToken:
+          - create:conta
+
+  /portador/{portador_id}/conta/{id}:
+    get:
+      tags:
+        - Conta
+      summary: Busca conta
+      operationId: api.conta.busca_conta
+      parameters:
+        - name: portador_id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Conta encontrada
+        "400":
+          description: Requisição inválida
+        "401":
+          description: Requisição não autorizada
+        "403":
+          description: Sem permissão
+        "500":
+          description: Erro interno no servidor
+      security:
+        - XAccessToken:
+          - read:conta
+
+    delete:
+      tags:
+        - Conta
+      summary: Exclui conta
+      operationId: api.conta.exclui_conta
+      parameters:
+        - name: portador_id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Conta excluído com sucesso
+        "400":
+          description: Requisição inválida
+        "401":
+          description: Requisição não autorizada
+        "403":
+          description: Sem permissão
+        "500":
+          description: Erro interno no servidor
+      security:
+        - XAccessToken:
+          - delete:conta
+
+    patch:
+      tags:
+        - Conta
+      summary: Atualiza status da conta
+      operationId: api.conta.altera_status_conta
+      parameters:
+        - name: portador_id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Conta'
+              required:
+                - ativa
+      responses:
+        "204":
+          description: Alteração realizada com sucesso
+        "400":
+          description: Requisição inválida
+        "401":
+          description: Requisição não autorizada
+        "403":
+          description: Sem permissão
+        "500":
+          description: Erro interno no servidor
+      security:
+        - XAccessToken:
+          - update:conta
+
+  /portador/{portador_id}/conta/{conta_id}/transacao:
+    post:
+      tags:
+        - Transacao
+      summary: Cria transação
+      operationId: api.transacao.cria_transacao
+      parameters:
+        - name: portador_id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: conta_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Transacao'
+              required:
+                - transacao
+                - valor
+      responses:
+        "201":
+          description: Cadastro de transação efetuada com sucesso
+        "400":
+          description: Requisição inválida
+        "401":
+          description: Requisição não autorizada
+        "403":
+          description: Sem permissão
+        "500":
+          description: Erro interno no servidor
+      security:
+        - XAccessToken:
+          - create:transacao
+
+    get:
+      tags:
+        - Transacao
+      summary: Lista transações
+      operationId: api.transacao.lista_transacao
+      parameters:
+        - name: portador_id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: conta_id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: data_inicio
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+            nullable: true
+        - name: data_fim
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+            nullable: true
+      responses:
+        "200":
+          description: Transação encontrada
+        "400":
+          description: Requisição inválida
+        "401":
+          description: Requisição não autorizada
+        "403":
+          description: Sem permissão
+        "500":
+          description: Erro interno no servidor
+      security:
+        - XAccessToken:
+          - read:transacao
+
+  /portador/{portador_id}/conta/{conta_id}/transacao/{id}:
+    get:
+      tags:
+        - Transacao
+      summary: Busca transação
+      operationId: api.transacao.busca_transacao
+      parameters:
+        - name: portador_id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: conta_id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Transação encontrada
+        "400":
+          description: Requisição inválida
+        "401":
+          description: Requisição não autorizada
+        "403":
+          description: Sem permissão
+        "500":
+          description: Erro interno no servidor
+      security:
+        - XAccessToken:
+          - read:transacao
+
+components:
+  securitySchemes:
+    XAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      x-bearerInfoFunc: utils.auth.token_required
+
+  schemas:
+    Usuario:
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+        senha:
+          type: string
+          format: password
+          minLength: 6
+          maxLength: 256
+        admin:
+          type: boolean
+
+    Portador:
+      properties:
+        id:
+          type: integer
+        cpf:
+          type: string
+          minLength: 11
+          maxLength: 11
+        nome:
+          type: string
+          minLength: 3
+          maxLength: 128
+
+    Conta:
+      properties:
+        id:
+          type: integer
+        portador_id:
+          type: integer
+        saldo:
+          type: number
+          format: float
+          minimum: 0
+        numero:
+          type: integer
+        agencia:
+          type: integer
+        ativa:
+          type: boolean
+
+    Transacao:
+      properties:
+        id:
+          type: integer
+        conta_id:
+          type: integer
+        transacao:
+          type: string
+          enum:
+            - DEPOSITO
+            - SAQUE
+        valor:
+          type: number
+          format: float
+          minimum: 0
+        data_hora:
+          type: string
+          format: date-time

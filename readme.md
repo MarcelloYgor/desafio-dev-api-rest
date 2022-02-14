@@ -11,10 +11,15 @@ A documentação da API pode ser consultada em *localhost:5000/ui*.
 OBSERVAÇÕES:
 
 > Ao inicializar o projeto, um arquivo de banco de dados SQL do SQLite é criado (test.db), talvez seja necessário alterar o caminho no *config.py*;
+
 > A API foi escrita seguindo o padrão Restful, então as operações de depositar e sacar são acionadas na criação de uma transação (POST /operador/{operador_id}/conta/{conta_id}/transacao) com o tipo de transação enviada no body (transacao: DEPOSITO | SAQUE);
+
 > Foi adicionada uma tabela de usuários para autenticação com JWT;
+
 > As rotas que precisam de um token estão marcadas na documentação Swagger e o token deve ser passado no header como um _**'Bearer <token>'**_;
+
 > A função de fechar a conta pelo portador foi interpretada como exclusão de conta;
+
 > O bloqueio e ativação de contas é permitido somente por usuários administradores (parâmetro admin) e um Design Pattern **Decorator** valida a permissão (PATCH /portador/{portador_id}/conta/{id}).
 
 ### Inicializando o projeto:
